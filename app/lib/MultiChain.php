@@ -21,7 +21,7 @@ class MultiChain {
      * @return mixed
      */
     public function getInfo() {
-        return $this->getinfo();
+        return $this->exec('getinfo');
     }
 
 
@@ -32,7 +32,7 @@ class MultiChain {
      * @return mixed アドレス
      */
     public function getNewAddress($address = '') {
-        return $this->getnewaddress($address);
+        return $this->exec('getnewaddress', $address);
     }
 
 
@@ -48,7 +48,7 @@ class MultiChain {
      * @return mixed
      */
     public function issue($address, $assetName, $quantity, $unit = 1, $nativeAmount = 0, $customField = array()) {
-        return $this->issue($address, $assetName, $quantity, $unit, $nativeAmount, json_encode($customField));
+        return $this->exec('issue', $address, $assetName, $quantity, $unit, $nativeAmount, json_encode($customField));
     }
 
 
@@ -62,7 +62,7 @@ class MultiChain {
      * @return mixed
      */
     public function sendToAddress($address, $amount, $comment = '', $commentTo = '') {
-        return $this->sendToAddress($address, $amount, $comment, $commentTo);
+        return $this->exec('sendtoaddress', $address, $amount, $comment, $commentTo);
     }
 
 
@@ -76,7 +76,7 @@ class MultiChain {
      * @return mixed
      */
     public function sendFromAddress($fromAddress, $toAddress, $amount, $comment = '', $commentTo = '') {
-        return $this->sendFromAddress($fromAddress, $toAddress, $amount, $comment, $commentTo);
+        return $this->exec('sendfromaddress', $fromAddress, $toAddress, $amount, $comment, $commentTo);
     }
 
 
@@ -86,23 +86,27 @@ class MultiChain {
      * @param array $param
      * @return mixed|null
      */
-    public function __call($method, $param = array()) {
+    public function exec($method, ...$param) {
 
-        $command = $this->cliPath . $this->channel . ' ' . $method;
+        $command = $this->cliPath . ' ' . $this->channel . ' ' . $method;
+
         foreach ($param as $p) {
             $command.= ' ' . $p;
         }
 
+        // コマンドを実行
         exec($command, $lines);
 
+        // 結果を解析
         if (count($lines) < 3) {
             return null;
         }
 
 
         $ret = '';
+        // 2行目までは実行パラメータと空行なので無視
         for ($i = 2; $i < count($lines); $i++) {
-            $ret .= $lines[$i] . "\n";
+            $ret.= $lines[$i] . "\n";
         }
 
         $ret = trim($ret);
