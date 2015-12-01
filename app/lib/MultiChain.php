@@ -35,7 +35,7 @@ class MultiChain {
         return $this->getnewaddress($address);
     }
 
-    
+
     /**
      * Assetを作成する
      * MultiChainのissueを実行する
